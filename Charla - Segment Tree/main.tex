@@ -1,0 +1,94 @@
+\documentclass{beamer}
+\usepackage{graphicx}
+\usepackage{tikz}
+
+\usetheme{Boadilla}
+\setlength{\parskip}{\baselineskip}
+
+\title{Range Queries Con Updates}
+\subtitle{Segment Tree y otras variantes}
+\author{Ulises López Pacholczak}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+\tableofcontents
+\end{frame}
+
+\section{Introducción}
+
+\begin{frame}{Introducción}
+Ya sabemos como responder queries de suma en rango, en $O(n)$ tiempo de procesamiento ($O(n*m)$ si es una tabla) y $O(1)$ tiempo de consulta.
+
+\pause
+También, se pueden resolver queries de maximo o mínimo en rangos con $O(n\:log\: n)$ tiempo de procesamiento y $O(1)$ tiempo de consulta.
+
+\pause
+¿Pero esto es suficiente para todos los problemas?
+\end{frame}
+
+\section{Segment Tree}
+\subsection{Problema Motivador}
+
+\begin{frame}{Suma en Rangos con Updates}
+
+\begin{block}{CSES 1648 - Dynamic Range Sum Queries}
+Dado un arreglo de $n$ enteros, tu tarea es procesar $q$ queries de los siguientes tipos:
+\begin{enumerate}
+    \item Actualizar el valor en la posición $k$ a un valor $u$
+    \item Cual es la suma de los valores en el rango $[a,b]$?
+\end{enumerate}
+Tanto $q$ y $n$ pueden ser como máximo $2*10^5$
+\end{block}
+
+\url{https://cses.fi/problemset/task/1648}
+\end{frame}
+
+\begin{frame}{Con lo que ya sabemos...}
+Por cada query de tipo $1$, debemos realizar un reprocesamiento de $O(n)$. Por ende, la complejidad del problema nos quedaría $O(n^2)$, lo mismo que hacerlo con fuerza bruta.
+
+\pause
+Es claro que necesitamos otra estructura de datos para poder manejar los updates de forma eficiente...
+\end{frame}
+
+\subsection{Explicación de la Estructura}
+\begin{frame}{Segment Tree}
+El Segment Tree es una estructura de datos que nos permite realizar queries en rangos y updates en $O(log\:n)$.
+\pause
+
+\input{estructuras/segtree_ejemplo}
+
+\end{frame}
+
+\begin{frame}{Funcionamiento}
+Cada nodo representa el valor de realizar una operacion (en el caso del problema original, la suma) en un rango del arreglo.
+
+\input{estructuras/segtree_ranges}
+\end{frame}
+
+\begin{frame}{Ejemplo de Query}
+\input{estructuras/segtree_animacion_query_1}
+\end{frame}
+
+\begin{frame}{Ejemplo de Query}
+\input{estructuras/segtree_animacion_query_2}
+\end{frame}
+
+\begin{frame}{Ejemplo de Query}
+\input{estructuras/segtree_animacion_query_3}
+\end{frame}
+
+\begin{frame}{Ejemplo de Query}
+\input{estructuras/segtree_animacion_query_4}
+\end{frame}
+
+\begin{frame}{Ejemplo de Query}
+\input{estructuras/segtree_animacion_query_5}
+\end{frame}
+
+\end{document}
