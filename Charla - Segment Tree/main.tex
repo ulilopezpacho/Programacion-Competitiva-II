@@ -1,5 +1,6 @@
 \documentclass{beamer}
 \usepackage{graphicx}
+\usepackage{listings}
 \usepackage{tikz}
 
 \usetheme{Boadilla}
@@ -9,6 +10,27 @@
 \subtitle{Segment Tree y otras variantes}
 \author{Ulises López Pacholczak}
 \date{\today}
+
+\definecolor{keywords}{HTML}{44548A}
+\definecolor{strings}{HTML}{00999A}
+\definecolor{comments}{HTML}{990000}
+
+\lstset{language=C++,frame=single,basicstyle=\ttfamily \small,showstringspaces=false,columns=flexible}
+\lstset{
+  literate={ö}{{\"o}}1
+           {ä}{{\"a}}1
+           {ü}{{\"u}}1
+}
+\lstset{xleftmargin=0pt,xrightmargin=0pt}
+\lstset{aboveskip=12pt,belowskip=8pt}
+
+\lstset{
+    commentstyle=\color{comments},
+    keywordstyle=\color{keywords},
+    stringstyle=\color{strings}
+}
+
+
 
 \begin{document}
 
@@ -26,14 +48,13 @@
 Ya sabemos como responder queries de suma en rango, en $O(n)$ tiempo de procesamiento ($O(n*m)$ si es una tabla) y $O(1)$ tiempo de consulta.
 
 \pause
-También, se pueden resolver queries de maximo o mínimo en rangos con $O(n\:log\: n)$ tiempo de procesamiento y $O(1)$ tiempo de consulta.
+También, se pueden resolver queries de máximo o mínimo en rangos con $O(n\:log\: n)$ tiempo de procesamiento y $O(1)$ tiempo de consulta.
 
 \pause
 ¿Pero esto es suficiente para todos los problemas?
 \end{frame}
 
 \section{Segment Tree}
-\subsection{Problema Motivador}
 
 \begin{frame}{Suma en Rangos con Updates}
 
@@ -66,9 +87,15 @@ El Segment Tree es una estructura de datos que nos permite realizar queries en r
 \end{frame}
 
 \begin{frame}{Funcionamiento}
-Cada nodo representa el valor de realizar una operacion (en el caso del problema original, la suma) en un rango del arreglo.
+Cada nodo representa el valor de realizar una operación (en el caso del problema original, la suma) en un rango del arreglo.
 
 \input{estructuras/segtree_ranges}
+\end{frame}
+
+\subsection{Ejemplos de Queries y Updates}
+
+\begin{frame}{Guardado de Segment Tree en Memoria}
+\input{estructuras/segtree_memoria}
 \end{frame}
 
 \begin{frame}{Ejemplo de Query}
@@ -111,4 +138,156 @@ Cada nodo representa el valor de realizar una operacion (en el caso del problema
 \input{estructuras/segtree_animacion_update_5}
 \end{frame}
 
+\subsection{Código}
+
+\begin{frame}[fragile]{Version Iterativa}
+\begin{lstlisting}
+int retrieve(int a, int b) {
+    a += n; b += n;
+    int s = 0;
+    while (a <= b) {
+        if (a%2 == 1) s += tree[a++];
+        if (b%2 == 0) s += tree[b--];
+        a /= 2; b /= 2;
+    }
+    return s;
+}
+
+void update(int k, int x) {
+    k += n, tree[k] += x;
+    for (k /= 2; k >= 1; k /= 2) {
+        tree[k] = tree[2*k]+tree[2*k+1];
+    }
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Version Recursiva}
+\begin{lstlisting}
+int sum(int a, int b, int k, int x, int y) {
+    if (b < x || a > y) return 0;
+    if (a <= x && y <= b) return tree[k];
+    int d = (x+y)/2;
+    return sum(a,b,2*k,x,d) + sum(a,b,2*k+1,d+1,y);
+}
+      
+void update(int pos, int k, int x, int y, int val) {
+    if (x == y) { segTree[k] = val; return; }
+    int d = (x + y) / 2;
+    if (pos <= d) update(pos, k*2, x, d, val);
+    else update(pos, k*2+1, d+1, y, val);
+    segTree[k] = segTree[k*2] + segTree[k*2+1];
+}
+
+\end{lstlisting}
+\end{frame}
+
+\subsection{Complejidad}
+
+\begin{frame}{Complejidad}
+\begin{itemize}
+    \item Construcción: $O(n)$ (De todas formas, solemos construirlo usando la operación update)
+    \item Query: $O(log\:n)$
+    \item Update: $O(log\:n)$
+    \item Memoria: $O(2n)$
+\end{itemize}
+Puede notarse que el árbol que construimos es un árbol binario completo, por lo que la cantidad de nodos es $2n-1$, y tiene una profundidad de $log_2(n)$.
+\end{frame}
+
+\begin{frame}{Entendiendo la Complejidad de Query}
+Es fácil creer que la complejidad de query es mayor a $O(log\:n)$, ya que en cada nivel del árbol se podría llamar a los dos nodos hijos. Pero, en total, notemos que en cada nivel solo se van a estar llamando como máximo $4$ nodos en su versión recursiva, y $2$ en la versión iterativa. Veamos el caso recursivo, que es el más confuso.
+
+\begin{itemize}
+    \item El nodo está afuera del rango: no se llama a ningún hijo.
+    \item El nodo está completamente dentro del rango: no se llama a ningún hijo.
+    \item El nodo está parcialmente dentro del rango: se llama a los dos hijos. Esto puede ocurrir hasta dos veces por paso, ya que el intervalo es contiguo.
+\end{itemize}
+\end{frame}
+
+\subsection{Resolución de un Problema}
+
+\begin{frame}{Resolución del Problema}
+Veamos el Código de "Dynamic Range Sum Queries".
+
+\url{https://cses.fi/problemset/task/1648}
+\end{frame}
+
+\section{Generalización del Segment Tree}
+
+\begin{frame}{Pregunta Motivadora}
+La estructura de datos que trabajamos anteriormente, ¿sólo nos permite trabajar con la suma?
+
+\pause
+¡No! Podemos generalizarla para cualquier operación que sea asociativa y tenga un elemento neutro. A este tipo de operaciones las llamamos \textbf{monoides}.
+\end{frame}
+
+\subsection{Monoides}
+
+\begin{frame}{Definición de Monoide}
+Un Monoide es una estructura algebraica con una operación binaria, que es asociativa y tiene elemento neutro. Un Monoide se lo puede denotar como $(A, \oplus)$ y en lenguaje formal se define como:
+\begin{itemize}
+    \item $\forall a,b,c \in A, (a \oplus b) \oplus c = a \oplus (b \oplus c)$ (es asociativa)
+    \item $\exists !e \in A, \forall a \in A, a \oplus e = e \oplus a = a$ (existe neutro)
+    \item $\forall a,b \in A, a \oplus b \in A$ (operación cerrada)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Ejemplos de Monoide}
+Estos son algunos ejemolos de Monoides, que pueden ser interesantes para resolver problemas de Programación Competitiva:
+\begin{itemize}
+    \item $(\mathbb{N}, +)$
+    \item $(\mathbb{N}, \times)$
+    \item $(\mathbb{N}, min)$
+    \item $(\mathbb{N}, max)$
+    \item $(\mathbb{N}, gcd)$
+    \item $(\mathbb{N}, lcm)$
+    \item $(\mathbb{N}, \land)$
+    \item $(\mathbb{N}, \lor)$
+    \item $(\mathbb{N}, \oplus)$, donde $\oplus$ es el XOR
+    \item $(\text{string}, +)$, donde $+$ es la concatenación
+\end{itemize}
+\end{frame}
+
+\subsection{Implementación Generalizada del Segment Tree}
+
+\begin{frame}{Implementación Generalizada}
+Ahora, vamos a ver en C++ una implementación generalizada del Segment Tree, que nos permita trabajar con cualquier Monoide. Esta idea es gran cortesía de Tarche, que hizo que esté en nuestro Notebook para ICPC.
+\end{frame}
+
+\subsection{Resolviendo Más Problemas}
+\begin{frame}{Resolviendo Más Problemas}
+Resolvamos los siguientes problemas de CSES con la implementación de Monoide:
+\begin{itemize}
+    \item \url{https://cses.fi/problemset/task/1649}
+    \item \url{https://cses.fi/problemset/task/1650}
+\end{itemize}
+\end{frame}
+
+\section{Más Problemas de Segment Tree}
+
+\subsection{Hotel Queries}
+\begin{frame}{Hotel Queries}
+\begin{block}{CSES 1143 - Hotel Queries}
+Hay $n$ hoteles en una calle. Para cada hotel conoces el número de habitaciones libres. Tu tarea es asignar habitaciones de hotel para grupos de turistas. Todos los miembros de un grupo quieren alojarse en el mismo hotel.
+
+Los grupos llegarán a usted uno tras otro y usted sabrá para cada grupo la cantidad de habitaciones que necesita. Siempre asignas un grupo al primer hotel que tenga suficientes habitaciones. Después de esto, el número de habitaciones libres en el hotel disminuye.
+
+Para cada grupo de turistas, imprima el número del hotel al que fueron asignados.
+\end{block}
+
+\url{https://cses.fi/problemset/task/1143}
+\end{frame}
+
+\begin{frame}{Recorriendo Alternativamente el Segment Tree}
+Para resolver el problema, vamos a usar el Segment Tree de máximos como una estructura para hacer Binary Search. La idea es encontrar el primer hotel que tenga suficientes habitaciones para el grupo de turistas en $O(log \text{ } n)$.
+
+\pause
+Partimos del primer nodo (la raíz), y recorremos el de la izquierda si el nodo contiene un número mayor o igual a la cantidad de habitaciones que necesitamos, o el de la derecha si el nodo contiene un número menor.
+
+\pause
+Luego, actualizamos el Segment Tree para que tenga menos habitaciones libres. ¡Veamos el código!
+\end{frame}
+
 \end{document}
+
+% Bibliografía: https://cses.fi/book/book.pdf, http://www.oia.unsam.edu.ar/wp-content/uploads/2017/11/segment-tree.pdf, https://es.wikipedia.org/wiki/Monoide
