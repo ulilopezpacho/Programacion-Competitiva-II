@@ -266,6 +266,7 @@ Resolvamos los siguientes problemas de CSES con la implementación de Monoide:
 \section{Más Problemas de Segment Tree}
 
 \subsection{Hotel Queries}
+
 \begin{frame}{Hotel Queries}
 \begin{block}{CSES 1143 - Hotel Queries}
 Hay $n$ hoteles en una calle. Para cada hotel conoces el número de habitaciones libres. Tu tarea es asignar habitaciones de hotel para grupos de turistas. Todos los miembros de un grupo quieren alojarse en el mismo hotel.
@@ -279,7 +280,7 @@ Para cada grupo de turistas, imprima el número del hotel al que fueron asignado
 \end{frame}
 
 \begin{frame}{Recorriendo Alternativamente el Segment Tree}
-Para resolver el problema, vamos a usar el Segment Tree de máximos como una estructura para hacer Binary Search. La idea es encontrar el primer hotel que tenga suficientes habitaciones para el grupo de turistas en $O(log \text{ } n)$.
+Para resolver el problema, vamos a usar el Segment Tree de máximos como una estructura para hacer Binary Search. La idea es encontrar el primer hotel que tenga suficientes habitaciones para el grupo de turistas en $O(log\:n)$.
 
 \pause
 Partimos del primer nodo (la raíz), y recorremos el de la izquierda si el nodo contiene un número mayor o igual a la cantidad de habitaciones que necesitamos, o el de la derecha si el nodo contiene un número menor.
@@ -288,6 +289,102 @@ Partimos del primer nodo (la raíz), y recorremos el de la izquierda si el nodo 
 Luego, actualizamos el Segment Tree para que tenga menos habitaciones libres. ¡Veamos el código!
 \end{frame}
 
+\subsection{Salary Queries}
+\begin{frame}{Salary Queries}
+\begin{block}{CSES 1144 - Salary Queries}
+Una compañía tiene $n$ empleados con ciertos salarios. Tu tarea es procesar salarios, pudiendo preguntar cuales eran los salarios de los empleados en un rango, y actualizar el salario de un empleado.
+\end{block}
+
+\url{https://cses.fi/problemset/task/1144}
+\end{frame}
+
+\begin{frame}{Solución 1 - Segment Tree Dinámico}
+El gran problema que tiene este ejercicio es que los salarios pueden ser hasta $1e9$, por lo que si queremos guardar un Segment Tree en el que cada posición guarde cuántas personas tienen ese salario (para hacer una query de rangos) requeriríamos muchísima memoria.
+
+\pause
+Para resolver esto, podemos usar un Segment Tree Dinámico, que solo guarde los nodos que necesitemos. De esta forma, la complejidad de memoria es $O(n\:log\:n)$ en la cantidad de updates, y la complejidad de tiempo es $O(n\:log\:n)$ para construirlo, $O(log\:n)$ para cada query y $O(log\:n)$ para cada update.
+\end{frame}
+
+\begin{frame}{Solución 2 - Compresión de Coordenadas}
+Otra forma de resolverlo (que es una idea muy común en programación competitiva cuando los problemas son offline) es utilizar compresión de coordenadas.
+
+\pause
+Lo que se hace es guardar los salarios actuales y posibles a futuro (leyendo todas las queries) en un arreglo, y luego comprimirlos para que sean números del $0$ al $n$, asignando a cada valor posible un número comprimido. De esta forma, vamos a tener como mucho $2n$ valores posibles, y podemos guardar en un Segment Tree tradicional.
+\end{frame}
+
+\subsection{Otros Problemas Sugeridos}
+
+\begin{frame}{Otros Problemas}
+\begin{enumerate}
+    \item Range Update Queries: \url{https://cses.fi/problemset/task/1651} (Updates en rango y queries en punto)
+    \item List Removals: \url{https://cses.fi/problemset/task/1749} (Búsqueda binaria en el segment tree)
+    \item Distinct Value Queries: \url{https://cses.fi/problemset/task/1734/} (Segment Tree dinámico o compresión de coordenadas)
+    \item Prefix Sum Queries: \url{https://cses.fi/problemset/task/2166/} (Operaciones con nodos más complejas) 
+\end{enumerate}
+\end{frame}
+
+\section{Lazy Segment Tree}
+\subsection{Introducción}
+
+\begin{frame}{Llevándolo un poco más lejos...}
+Ahora queremos realizar no solo queries en rangos, sino que también updates en rangos, de forma eficiente (sin hacer un nodo a la vez). ¿Cómo podemos hacerlo?
+\end{frame}
+
+\begin{frame}{Lazy Segment Tree}
+La idea es usar un Segment Tree que tenga un arreglo de lazy updates, que nos permita guardar los updates que no se han propagado a los hijos. De esta forma, podemos hacer updates en rangos en $O(log\:n)$.
+
+\pause
+Para ello, vamos a hacer que la propagación sea "vaga", en el sentido de que una vez que llegue se llegue a un nodo que este totalmente contenido al intervalo a actualizar, no se va a propagar a sus hijos.
+
+\pause
+Veamos un ejemplo de problema para poder entender esto mejor...
+\end{frame}
+
+\subsection{Problema Inicial}
+\begin{frame}{Range Updates and Sums}
+\begin{block}{CSES 1735 - Range Updates and Sums}
+Su tarea es mantener una matriz de n valores y procesar eficientemente los siguientes tipos de consultas:
+\begin{enumerate}
+    \item Aumente cada valor en el rango $[a,b]$ en $x$.
+    \item Establezca cada valor en el rango $[a,b]$ en $x$.
+    \item Calcule la suma de los valores en el rango $[a,b]$.
+\end{enumerate}
+\end{block}
+
+\url{https://cses.fi/problemset/task/1735}
+\end{frame}
+
+\begin{frame}{Ejemplo de Lazy Segment Tree}
+\input{estructuras/segtree_lazy_1}
+\end{frame}
+
+\begin{frame}{Update en Lazy Segment Tree}
+\input{estructuras/segtree_lazy_2}
+\end{frame}
+
+\begin{frame}{Propagando al hacer Query}
+\input{estructuras/segtree_lazy_3}
+\end{frame}
+    
+
+\begin{frame}{¿Cómo pensar un problema de Lazy Segment Tree?}
+Para que un problema pueda realizarse con Lazy Segment Tree, debemos poder contar con una operación que calcule el valor de un nodo sin haber propagado los updates a sus hijos.
+
+En este caso, lo podemos hacer guardando tres variables ($suma$, $sumaLazy$ y $setValueLazy$), de la siguiente forma:
+\end{frame}
+
+\begin{frame}{¿Cómo pensar un problema de Lazy Segment Tree?}
+\begin{enumerate}
+    \item Si no hay updates por hacer, el nodo vale $suma$: la suma de sus hijos.
+    \pause
+    \item Si hay un update de seteo, el nodo vale $setValueLazy \times (r-l+1)$: el valor que se seteo multiplicado por la cantidad de elementos en el rango.
+    \pause
+    \item Si hay un update de suma, el nodo vale $sumaLazy \times (r-l+1) + suma$: lo que se le va a sumar a cada uno de sus hijos por la cantidad de elementos en el rango, más la suma de los hijos.
+    \pause
+    \item Si hay un update de suma y un update de seteo, el nodo vale $setValueLazy \times (r-l+1)$: el valor que se seteo multiplicado por la cantidad de elementos en el rango.
+\end{enumerate}
+\end{frame}
+
 \end{document}
 
-% Bibliografía: https://cses.fi/book/book.pdf, http://www.oia.unsam.edu.ar/wp-content/uploads/2017/11/segment-tree.pdf, https://es.wikipedia.org/wiki/Monoide
+% Bibliografía: https://cses.fi/book/book.pdf, http://www.oia.unsam.edu.ar/wp-content/uploads/2017/11/segment-tree.pdf, https://es.wikipedia.org/wiki/Monoide, https://usaco.guide, graficos de https://github.com/pllk/cphb/blob/master/chapter28.tex
