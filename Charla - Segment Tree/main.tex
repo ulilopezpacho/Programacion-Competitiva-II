@@ -1,6 +1,12 @@
 \documentclass{beamer}
+
+\usepackage[utf8]{inputenc}     %encoding del codigo fuente
+\usepackage[T1]{fontenc}        %encoding del pdf
+\usepackage[spanish]{babel}     %lenguaje para cortes de palabras, bibliografia, etc
 \usepackage{graphicx}
-\usepackage{listings}
+\usepackage{listings}           %Codigo: chequear minted
+%\usepackage{tcolorbox}
+%\tcbuselibrary{minted,breakable,skins}
 \usepackage{tikz}
 
 \usetheme{Boadilla}
@@ -9,7 +15,7 @@
 \title{Range Queries Con Updates}
 \subtitle{Segment Tree y otras variantes}
 \author{Ulises López Pacholczak}
-\date{\today}
+\date[PC2]{Programación Competitiva 2\\\today}
 
 \definecolor{keywords}{HTML}{44548A}
 \definecolor{strings}{HTML}{00999A}
@@ -55,7 +61,7 @@
 Ya sabemos como responder queries de suma en rango, en $O(n)$ tiempo de procesamiento ($O(n*m)$ si es una tabla) y $O(1)$ tiempo de consulta.
 
 \pause
-También, se pueden resolver queries de máximo o mínimo en rangos con $O(n\:log\: n)$ tiempo de procesamiento y $O(1)$ tiempo de consulta.
+También, se pueden resolver queries de máximo o mínimo en rangos con $O(n \log n)$ tiempo de procesamiento y $O(1)$ tiempo de consulta.
 
 \pause
 ¿Pero esto es suficiente para todos los problemas?
@@ -86,10 +92,12 @@ Es claro que necesitamos otra estructura de datos para poder manejar los updates
 
 \subsection{Explicación de la Estructura}
 \begin{frame}{Segment Tree}
-El Segment Tree es una estructura de datos que nos permite realizar queries en rangos y updates en $O(log\:n)$.
+El Segment Tree es una estructura de datos que nos permite realizar queries en rangos y updates en $O(\log n)$.
 \pause
 
 \input{estructuras/segtree_ejemplo}
+
+{\tiny En este caso, cada nodo guarda la sumatoria de sus descendientes}
 
 \end{frame}
 
@@ -194,15 +202,15 @@ void update(int pos, int k, int x, int y, int val) {
 \begin{frame}{Complejidad}
 \begin{itemize}
     \item Construcción: $O(n)$ (De todas formas, solemos construirlo usando la operación update)
-    \item Query: $O(log\:n)$
-    \item Update: $O(log\:n)$
+    \item Query: $O(\log n)$
+    \item Update: $O(\log n)$
     \item Memoria: $O(2n)$
 \end{itemize}
 Puede notarse que el árbol que construimos es un árbol binario completo, por lo que la cantidad de nodos es $2n-1$, y tiene una profundidad de $log_2(n)$.
 \end{frame}
 
 \begin{frame}{Entendiendo la Complejidad de Query}
-Es fácil creer que la complejidad de query es mayor a $O(log\:n)$, ya que en cada nivel del árbol se podría llamar a los dos nodos hijos. Pero, en total, notemos que en cada nivel solo se van a estar llamando como máximo $4$ nodos en su versión recursiva, y $2$ en la versión iterativa. Veamos el caso recursivo, que es el más confuso.
+Es fácil creer que la complejidad de query es mayor a $O(\log n)$, ya que en cada nivel del árbol se podría llamar a los dos nodos hijos. Pero, en total, notemos que en cada nivel solo se van a estar llamando como máximo $4$ nodos en su versión recursiva, y $2$ en la versión iterativa. Veamos el caso recursivo, que es el más confuso.
 
 \begin{itemize}
     \item El nodo está afuera del rango: no se llama a ningún hijo.
@@ -214,7 +222,7 @@ Es fácil creer que la complejidad de query es mayor a $O(log\:n)$, ya que en ca
 \subsection{Resolución de un Problema}
 
 \begin{frame}{Resolución del Problema}
-Veamos el Código de "Dynamic Range Sum Queries".
+Veamos el Código de ``Dynamic Range Sum Queries''.
 
 \url{https://cses.fi/problemset/task/1648}
 \end{frame}
@@ -287,7 +295,7 @@ Para cada grupo de turistas, imprima el número del hotel al que fueron asignado
 \end{frame}
 
 \begin{frame}{Recorriendo Alternativamente el Segment Tree}
-Para resolver el problema, vamos a usar el Segment Tree de máximos como una estructura para hacer Binary Search. La idea es encontrar el primer hotel que tenga suficientes habitaciones para el grupo de turistas en $O(log\:n)$.
+Para resolver el problema, vamos a usar el Segment Tree de máximos como una estructura para hacer Binary Search. La idea es encontrar el primer hotel que tenga suficientes habitaciones para el grupo de turistas en $O(\log n)$.
 
 \pause
 Partimos del primer nodo (la raíz), y recorremos el de la izquierda si el nodo contiene un número mayor o igual a la cantidad de habitaciones que necesitamos, o el de la derecha si el nodo contiene un número menor.
@@ -309,7 +317,7 @@ Una compañía tiene $n$ empleados con ciertos salarios. Tu tarea es procesar sa
 El gran problema que tiene este ejercicio es que los salarios pueden ser hasta $1e9$, por lo que si queremos guardar un Segment Tree en el que cada posición guarde cuántas personas tienen ese salario (para hacer una query de rangos) requeriríamos muchísima memoria.
 
 \pause
-Para resolver esto, podemos usar un Segment Tree Dinámico, que solo guarde los nodos que necesitemos. De esta forma, la complejidad de memoria es $O(n\:log\:n)$ en la cantidad de updates, y la complejidad de tiempo es $O(n\:log\:n)$ para construirlo, $O(log\:n)$ para cada query y $O(log\:n)$ para cada update.
+Para resolver esto, podemos usar un Segment Tree Dinámico, que solo guarde los nodos que necesitemos. De esta forma, la complejidad de memoria es $O(n\log n)$ en la cantidad de updates, y la complejidad de tiempo es $O(n\log n)$ para construirlo, $O(\log n)$ para cada query y $O(\log n)$ para cada update.
 \end{frame}
 
 \begin{frame}{Solución 2 - Compresión de Coordenadas}
@@ -338,10 +346,10 @@ Ahora queremos realizar no solo queries en rangos, sino que también updates en 
 \end{frame}
 
 \begin{frame}{Lazy Segment Tree}
-La idea es usar un Segment Tree que tenga un arreglo de lazy updates, que nos permita guardar los updates que no se han propagado a los hijos. De esta forma, podemos hacer updates en rangos en $O(log\:n)$.
+La idea es usar un Segment Tree que tenga un arreglo de lazy updates, que nos permita guardar los updates que no se han propagado a los hijos. De esta forma, podemos hacer updates en rangos en $O(\log n)$.
 
 \pause
-Para ello, vamos a hacer que la propagación sea "vaga", en el sentido de que una vez que llegue se llegue a un nodo que este totalmente contenido al intervalo a actualizar, no se va a propagar a sus hijos.
+Para ello, vamos a hacer que la propagación sea ``perezosa'', en el sentido de que una vez que llegue se llegue a un nodo que este totalmente contenido al intervalo a actualizar, no se va a propagar a sus hijos.
 
 \pause
 Veamos un ejemplo de problema para poder entender esto mejor...
@@ -350,7 +358,7 @@ Veamos un ejemplo de problema para poder entender esto mejor...
 \subsection{Problema de Suma}
 \begin{frame}{Range Updates and Sums}
 \begin{block}{CSES 1735 - Range Updates and Sums}
-Su tarea es mantener una matriz de n valores y procesar eficientemente los siguientes tipos de consultas:
+Su tarea es mantener un vector de $n$ valores y procesar eficientemente los siguientes tipos de consultas:
 \begin{enumerate}
     \item Aumente cada valor en el rango $[a,b]$ en $x$.
     \item Establezca cada valor en el rango $[a,b]$ en $x$.
@@ -387,7 +395,7 @@ En este caso, lo podemos hacer guardando tres variables ($suma$, $sumaLazy$ y $s
     \pause
     \item Si hay un update de suma, el nodo vale $sumaLazy \times (r-l+1) + suma$: lo que se le va a sumar a cada uno de sus hijos por la cantidad de elementos en el rango, más la suma de los hijos.
     \pause
-    \item Si hay un update de suma y un update de seteo, el nodo vale $setValueLazy \times (r-l+1)$: el valor que se seteo multiplicado por la cantidad de elementos en el rango.
+    \item Si hay un update de suma y un update de seteo, el nodo vale $(setValueLazy  + sumaLazy) \times (r-l+1)$: el valor que se seteo multiplicado por la cantidad de elementos en el rango.
 \end{enumerate}
 \end{frame}
 
@@ -395,9 +403,9 @@ En este caso, lo podemos hacer guardando tres variables ($suma$, $sumaLazy$ y $s
 \begin{enumerate}
     \item Retornar si el rango está afuera del update.
     \pause
-    \item Si el rango está contenido en el nodo, setear los valores "lazy" y retornar.
+    \item Si el rango está contenido en el nodo, setear los valores ``lazy'' y retornar.
     \pause
-    \item Si el rango está parcialmente contenido en el nodo, propagar el update a los hijos y borrar los valores "lazy".
+    \item Si el rango está parcialmente contenido en el nodo, propagar el update a los hijos y borrar los valores ``lazy''.
     \pause
     \item Llamar a actualizar cada uno de los nodos hijos.
     \pause
@@ -410,9 +418,9 @@ En este caso, lo podemos hacer guardando tres variables ($suma$, $sumaLazy$ y $s
 \begin{enumerate}
     \item Retornar si el rango está afuera de la query.
     \pause
-    \item Si el rango está contenido en el nodo, retornar el valor del nodo realizando la operación "lazy".
+    \item Si el rango está contenido en el nodo, retornar el valor del nodo realizando la operación ``lazy''.
     \pause
-    \item Si el rango está parcialmente contenido en el nodo, propagar el update a los hijos y borrar los valores "lazy".
+    \item Si el rango está parcialmente contenido en el nodo, propagar el update a los hijos y borrar los valores ``lazy''.
     \pause
     \item Llamar a query cada uno de los nodos hijos.
     \pause
@@ -434,10 +442,10 @@ Para que una operación se pueda generalizar en un Lazy Segment tree, debe cumpl
 \subsection{Polinomial Queries}
 \begin{frame}{Polinomial Queries}
 \begin{block}{CSES 1736 - Polinomial Queries}
-Su tarea es mantener una matriz de n valores y procesar eficientemente los siguientes tipos de consultas:
+Su tarea es mantener un vector de $n$ valores y procesar eficientemente los siguientes tipos de consultas:
 \begin{enumerate}
-    \item Aumente el primer valor en el rango [a,b] en 1, el segundo valor en 2, el tercer valor en 3, y así sucesivamente.
-    \item Calcule la suma de los valores en el rango [a,b].
+    \item Aumente el primer valor en el rango $[a,b]$ en 1, el segundo valor en 2, el tercer valor en 3, y así sucesivamente.
+    \item Calcule la suma de los valores en el rango $[a,b]$.
 \end{enumerate}
 \end{block}
 
