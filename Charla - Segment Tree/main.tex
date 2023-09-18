@@ -30,6 +30,12 @@
     stringstyle=\color{strings}
 }
 
+\AtBeginSection[]
+{
+  \begin{frame}
+    \tableofcontents[currentsection,hideallsubsections]
+  \end{frame}
+}
 
 
 \begin{document}
@@ -39,7 +45,8 @@
 \end{frame}
 
 \begin{frame}
-\tableofcontents
+\small
+\tableofcontents[hideallsubsections]
 \end{frame}
 
 \section{Introducción}
@@ -340,7 +347,7 @@ Para ello, vamos a hacer que la propagación sea "vaga", en el sentido de que un
 Veamos un ejemplo de problema para poder entender esto mejor...
 \end{frame}
 
-\subsection{Problema Inicial}
+\subsection{Problema de Suma}
 \begin{frame}{Range Updates and Sums}
 \begin{block}{CSES 1735 - Range Updates and Sums}
 Su tarea es mantener una matriz de n valores y procesar eficientemente los siguientes tipos de consultas:
@@ -365,7 +372,6 @@ Su tarea es mantener una matriz de n valores y procesar eficientemente los sigui
 \begin{frame}{Propagando al hacer Query}
 \input{estructuras/segtree_lazy_3}
 \end{frame}
-    
 
 \begin{frame}{¿Cómo pensar un problema de Lazy Segment Tree?}
 Para que un problema pueda realizarse con Lazy Segment Tree, debemos poder contar con una operación que calcule el valor de un nodo sin haber propagado los updates a sus hijos.
@@ -385,6 +391,113 @@ En este caso, lo podemos hacer guardando tres variables ($suma$, $sumaLazy$ y $s
 \end{enumerate}
 \end{frame}
 
-\end{document}
+\begin{frame}{Los pasos de un Update}
+\begin{enumerate}
+    \item Retornar si el rango está afuera del update.
+    \pause
+    \item Si el rango está contenido en el nodo, setear los valores "lazy" y retornar.
+    \pause
+    \item Si el rango está parcialmente contenido en el nodo, propagar el update a los hijos y borrar los valores "lazy".
+    \pause
+    \item Llamar a actualizar cada uno de los nodos hijos.
+    \pause
+    \item Actualizar el valor del nodo.
+\end{enumerate}
+\end{frame}
 
-% Bibliografía: https://cses.fi/book/book.pdf, http://www.oia.unsam.edu.ar/wp-content/uploads/2017/11/segment-tree.pdf, https://es.wikipedia.org/wiki/Monoide, https://usaco.guide, graficos de https://github.com/pllk/cphb/blob/master/chapter28.tex
+
+\begin{frame}{Los pasos de una Query}
+\begin{enumerate}
+    \item Retornar si el rango está afuera de la query.
+    \pause
+    \item Si el rango está contenido en el nodo, retornar el valor del nodo realizando la operación "lazy".
+    \pause
+    \item Si el rango está parcialmente contenido en el nodo, propagar el update a los hijos y borrar los valores "lazy".
+    \pause
+    \item Llamar a query cada uno de los nodos hijos.
+    \pause
+    \item Actualizar los valores de este nodo.
+    \pause
+    \item Retornar el valor del nodo.
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Yendo al código...}
+Veamos el código para entender cómo es que se puede programar de forma sencilla (o no tanto).
+\end{frame}
+
+\subsection{Generalizando el Lazy Segment Tree}
+\begin{frame}{Generalizando el Lazy Segment Tree}
+Para que una operación se pueda generalizar en un Lazy Segment tree, debe cumplir con las siguientes propiedades...
+\end{frame}
+
+\subsection{Polinomial Queries}
+\begin{frame}{Polinomial Queries}
+\begin{block}{CSES 1736 - Polinomial Queries}
+Su tarea es mantener una matriz de n valores y procesar eficientemente los siguientes tipos de consultas:
+\begin{enumerate}
+    \item Aumente el primer valor en el rango [a,b] en 1, el segundo valor en 2, el tercer valor en 3, y así sucesivamente.
+    \item Calcule la suma de los valores en el rango [a,b].
+\end{enumerate}
+\end{block}
+
+\url{https://cses.fi/problemset/task/1736/}
+\end{frame}
+
+\begin{frame}{Variables de los Nodos}
+\begin{itemize}
+    \item $suma$: la suma de los valores en el rango.
+    \item $lazy$: valor que contiene cuanto se le suma al primer elemento del rango que denota el nodo.
+    \item $cantidad$: cuántas veces se le aplicó una operación de update lazy a ese nodo (antes de propagarlo).
+\end{itemize}  
+\end{frame}
+    
+\begin{frame}{Acción de propagación}
+Para el nodo izquierdo, propagamos sumando tanto los valores $lazy$ como la $cantidad$.
+
+\pause
+Para el nodo derecho, el valor de $lazy$ se le suma $actual.lazy+actual.cantidad * mitadRangoActual$. Esto hace que se guarde nuevamente cual es el valor del primer elemento en el nodo. Luego, a $cantidad$ simplemente se le suma la $cantidad$ del nodo actual.
+\end{frame}
+    
+\begin{frame}{Evaluación de un Nodo}
+Para poder obtener el valor de un nodo, debemos realizar la siguiente cuenta:
+
+$(sumaPoli \times actual.cantidad) + (actual.lazy \times cantidadHijos) + actual.suma$
+
+\pause
+Siendo:
+
+$cantHijos = y - x + 1$, con $[x,y]$ el rango del nodo.
+$sumaPoli = \frac{cantHijos \times (cantHijos-1)}{2}$
+\end{frame}
+
+\begin{frame}{¡Veamos el codigo!}
+Leamos el código subido al juez, donde se pueden identificar estos pasos.
+\end{frame}
+
+\section{Bibliografía y Temas Relacionados}
+\begin{frame}{¡Muchas gracias!}
+Bibliografía:
+
+\begin{enumerate}
+    \item \url{https://cses.fi/book/book.pdf}
+    \item \url{http://www.oia.unsam.edu.ar/wp-content/uploads/2017/11/segment-tree.pdf}
+    \item \url{https://es.wikipedia.org/wiki/Monoide}
+    \item \url{https://usaco.guide}
+    \item \url{https://github.com/pllk/cphb/blob/master/chapter28.tex}
+    \item \url{https://cp-algorithms.com/data_structures/segment_tree.html}
+\end{enumerate}
+¡Agradecimientos a los dibujos del Guide to Competitive Programming!
+\end{frame}
+
+\begin{frame}{Temas Relacionados}
+\begin{enumerate}
+    \item Persistent Segment Tree
+    \item Fenwick Tree
+    \item Segment Tree y Fenwick Tree 2D
+    \item Segment Tree Lazy Creation + Lazy Update (codigo de USACO Guide)
+\end{enumerate}
+Se pueden profundizar en la bibliografía.
+\end{frame}
+
+\end{document}
