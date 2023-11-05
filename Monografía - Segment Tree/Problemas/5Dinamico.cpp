@@ -52,7 +52,8 @@ struct SegmentTree {
       update(*curr.right, pos, k*2+1, d+1, y, val);
     }
 
-    curr.value = (curr.left != nullptr? curr.left->value: 0) + (curr.right != nullptr? curr.right->value: 0);
+    curr.value = (curr.left != nullptr? curr.left->value: 0) +
+        (curr.right != nullptr? curr.right->value: 0);
   }
 
   void update(tint pos, tint val) {
@@ -65,28 +66,27 @@ int main () {
   cin.tie(nullptr);
 
   tint n, q;
-	cin >> n >> q;
+  cin >> n >> q;
 
   SegmentTree segTree (1e9+1);
   vector<tint> valores (n+1);
 	
-	forn (i, n) {
+  forn (i, n) {
     cin >> valores[i+1];
     segTree.update(valores[i+1], 1);
   }
 	
-	forn (i, q) {
+  forn (i, q) {
     char func;
-		tint a, b;
-		cin >> func >> a >> b;
+	tint a, b;
+	cin >> func >> a >> b;
 		
-		if (func == '?') {
-      cout << segTree.query(a, b) << "\n";
-    }
-		else {
-      segTree.update(valores[a], -1);
-      valores[a] = b;
-      segTree.update(valores[a], 1);
-    }
-	}
+	if (func == '?') {
+    cout << segTree.query(a, b) << "\n";
+    
+  } else {
+    segTree.update(valores[a], -1);
+    valores[a] = b;
+    segTree.update(valores[a], 1);
+  }
 }
